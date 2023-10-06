@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Management Search</title>
+</head>
+<body>
+    <h1>Knowledge Management Search</h1>
+    <form id="searchForm">
+        <label for="searchTerm">Search Term:</label>
+        <input type="text" id="searchTerm" placeholder="Enter search term">
+        <button type="submit">Search</button>
+    </form>
+    <h2>Search Results:</h2>
+    <ul id="resultsList"></ul>
+
+    <script>
+        // Function to handle form submission
+        document.getElementById('searchForm').addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent the default form submission behavior
+
+            // Get the search term from the input field
+            var searchTerm = document.getElementById('searchTerm').value;
+
+            // Make an AJAX request to the Flask /scrape endpoint
+            fetch(`/scrape?q=${searchTerm}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Handle the response data and display it on the page
+                    var resultsList = document.getElementById('resultsList');
+                    resultsList.innerHTML = ''; // Clear previous results
+
+                    for (var category in data) {
+                        if (data.hasOwnProperty(category)) {
+                            var categoryResults = data[category];
+                            if (categoryResults.length > 0) {
+                                var categoryHeader = document.createElement('h3');
+                                categoryHeader.textContent = category;
+                                resultsList.appendChild(categoryHeader);
+
+                                var categoryList = document.createElement('ul');
+                                for (var i = 0; i < categoryResults.length; i++) {
+                                    var listItem = document.createElement('li');
+                                    var link = document.createElement('a');
+                                    link.href = categoryResults[i].link;
+                                    link.textContent = categoryResults[i].title;
+                                    listItem.appendChild(link);
+                                    categoryList.appendChild(listItem);
+                                }
+                                resultsList.appendChild(categoryList);
+                            }
+                        }
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
